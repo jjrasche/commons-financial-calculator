@@ -6,7 +6,11 @@
       "Bash(node test-calculations.js:*)",
       "Bash(node test-calculations.mjs:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(gh run list:*)",
+      "Bash(git push:*)",
+      "Bash(gh run:*)",
+      "Bash(gh api:*)"
     ],
     "deny": [],
     "ask": []

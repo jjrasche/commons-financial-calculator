@@ -13,6 +13,7 @@ import ProjectionChart from './components/ProjectionChart';
 import ConstraintViolations from './components/ConstraintViolations';
 import ScenarioDropdown from './components/ScenarioDropdown';
 import ComparisonView from './components/ComparisonView';
+import PersonalCalculator from './components/PersonalCalculator';
 
 const STORAGE_KEY = 'commons-calculator-inputs';
 
@@ -43,6 +44,9 @@ function App() {
   const [projectionMonths, setProjectionMonths] = useState(24);
   const [volumeGrowthRate, setVolumeGrowthRate] = useState(2); // % per month
   const [showProjections, setShowProjections] = useState(true);
+
+  // View mode: personal or operational
+  const [viewMode, setViewMode] = useState<'personal' | 'operational'>('personal');
 
   // Save to localStorage whenever inputs change
   useEffect(() => {
@@ -94,7 +98,7 @@ function App() {
       {/* Top Menu Bar */}
       <div className="bg-gray-800 border-b border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-wrap gap-3 justify-between items-center">
+          <div className="flex flex-wrap gap-3 justify-between items-center mb-4">
             <div>
               <h1 className="text-xl md:text-2xl font-bold text-gray-100">
                 Commons Financial Calculator
@@ -103,28 +107,57 @@ function App() {
                 Interactive economic modeling for The Commons cooperative
               </p>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={snapshotForComparison}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
-              >
-                📊 Compare Scenario
-              </button>
-              <button
-                onClick={resetToDefaults}
-                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
-              >
-                ↺ Reset
-              </button>
-              <ScenarioDropdown presets={SCENARIO_PRESETS} onSelectPreset={loadPreset} />
-            </div>
+            {viewMode === 'operational' && (
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={snapshotForComparison}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                >
+                  📊 Compare Scenario
+                </button>
+                <button
+                  onClick={resetToDefaults}
+                  className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+                >
+                  ↺ Reset
+                </button>
+                <ScenarioDropdown presets={SCENARIO_PRESETS} onSelectPreset={loadPreset} />
+              </div>
+            )}
+          </div>
+
+          {/* Tab Switcher */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setViewMode('personal')}
+              className={`px-6 py-3 rounded-t-lg font-semibold transition-all ${
+                viewMode === 'personal'
+                  ? 'bg-gray-900 text-blue-400 border-b-2 border-blue-400'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              👤 Personal Calculator
+            </button>
+            <button
+              onClick={() => setViewMode('operational')}
+              className={`px-6 py-3 rounded-t-lg font-semibold transition-all ${
+                viewMode === 'operational'
+                  ? 'bg-gray-900 text-green-400 border-b-2 border-green-400'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              🏢 Operational Model
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {viewMode === 'personal' ? (
+          <PersonalCalculator />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Left Panel: Input Controls (40% on desktop) */}
           <div className="lg:col-span-2 bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
             <h2 className="text-lg font-semibold text-gray-100 mb-6">💰 Financial Controls</h2>
@@ -293,6 +326,7 @@ function App() {
             <ConstraintViolations violations={violations} />
           </div>
         </div>
+        )}
       </div>
     </div>
   );
