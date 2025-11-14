@@ -106,15 +106,7 @@ export function checkConstraints(
     });
   }
 
-  // 4. Member Price >= Food Cost
-  if (inputs.memberPrice < inputs.foodCost) {
-    violations.push({
-      type: 'member_floor',
-      message: `Member price ($${inputs.memberPrice.toFixed(2)}) below food cost ($${inputs.foodCost.toFixed(2)})`,
-    });
-  }
-
-  // 5. Member Price <= Public Price
+  // 4. Member Price <= Public Price
   if (inputs.memberPrice > inputs.publicPrice) {
     violations.push({
       type: 'member_ceiling',
@@ -122,7 +114,7 @@ export function checkConstraints(
     });
   }
 
-  // 6. Surplus >= $0 (no deficit)
+  // 5. Surplus >= $0 (no deficit)
   if (results.surplus < 0) {
     violations.push({
       type: 'deficit',
@@ -130,7 +122,7 @@ export function checkConstraints(
     });
   }
 
-  // 7. Staffing adequacy (warn if understaffed or overstaffed by more than 20%)
+  // 6. Staffing adequacy (warn if understaffed or overstaffed by more than 20%)
   if (results.staffingRatio < 0.9) {
     const shortage = results.laborHoursNeeded - results.totalMemberHours;
     violations.push({
