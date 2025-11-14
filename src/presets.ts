@@ -9,6 +9,11 @@ export const DEFAULT_VALUES: CalculatorInputs = {
   memberPercentage: 23,
   annualOperating: 115000,
   wageDistribution: 50,
+  memberTiers: {
+    tier1Count: 20, // 8 hrs/month
+    tier2Count: 15, // 20 hrs/month
+    tier3Count: 10, // 40 hrs/month
+  },
 };
 
 export const SCENARIO_PRESETS: ScenarioPreset[] = [

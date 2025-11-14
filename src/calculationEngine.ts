@@ -10,7 +10,13 @@ export function calculateResults(inputs: CalculatorInputs): CalculationResults {
     memberPercentage,
     annualOperating,
     wageDistribution,
+    memberTiers,
   } = inputs;
+
+  // Member Calculations
+  const totalMembers = memberTiers.tier1Count + memberTiers.tier2Count + memberTiers.tier3Count;
+  const totalMemberHours = (memberTiers.tier1Count * 8) + (memberTiers.tier2Count * 20) + (memberTiers.tier3Count * 40);
+  const avgHoursPerMember = totalMembers > 0 ? totalMemberHours / totalMembers : 0;
 
   // Monthly Revenue
   const memberMealsPerDay = dailyVolume * (memberPercentage / 100);
@@ -24,8 +30,12 @@ export function calculateResults(inputs: CalculatorInputs): CalculationResults {
   const monthlyOperating = annualOperating / 12;
   const laborHoursPerDay = dailyVolume / 8.5;
   const monthlyLaborHours = laborHoursPerDay * 30;
+  const laborHoursNeeded = monthlyLaborHours;
   const monthlyBaseLaborCost = monthlyLaborHours * baseWage;
   const totalCosts = monthlyFoodCost + monthlyOperating + monthlyBaseLaborCost;
+
+  // Staffing Ratio
+  const staffingRatio = laborHoursNeeded > 0 ? totalMemberHours / laborHoursNeeded : 0;
 
   // Surplus & Distribution
   const surplus = totalRevenue - totalCosts;
@@ -57,6 +67,11 @@ export function calculateResults(inputs: CalculatorInputs): CalculationResults {
     effectiveWage,
     breakeven,
     marginOfSafety,
+    totalMembers,
+    totalMemberHours,
+    laborHoursNeeded,
+    staffingRatio,
+    avgHoursPerMember,
   };
 }
 
@@ -107,19 +122,26 @@ export function checkConstraints(
     });
   }
 
-  // 6. Labor Hours/Day <= 60
-  if (results.laborHoursPerDay > 60) {
-    violations.push({
-      type: 'labor_limit',
-      message: `Daily labor (${Math.round(results.laborHoursPerDay)} hrs) exceeds 60-hour limit`,
-    });
-  }
-
-  // 7. Surplus >= $0 (no deficit)
+  // 6. Surplus >= $0 (no deficit)
   if (results.surplus < 0) {
     violations.push({
       type: 'deficit',
       message: `Operating at deficit: -$${Math.abs(results.surplus).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/month`,
+    });
+  }
+
+  // 7. Staffing adequacy (warn if understaffed or overstaffed by more than 20%)
+  if (results.staffingRatio < 0.9) {
+    const shortage = results.laborHoursNeeded - results.totalMemberHours;
+    violations.push({
+      type: 'understaffed',
+      message: `Understaffed: Need ${shortage.toFixed(0)} more hours/month (${(results.staffingRatio * 100).toFixed(0)}% staffed)`,
+    });
+  } else if (results.staffingRatio > 1.2) {
+    const excess = results.totalMemberHours - results.laborHoursNeeded;
+    violations.push({
+      type: 'overstaffed',
+      message: `Overstaffed: ${excess.toFixed(0)} excess hours/month (${(results.staffingRatio * 100).toFixed(0)}% staffed)`,
     });
   }
 

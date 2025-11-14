@@ -19,17 +19,29 @@ export default function EffectiveWageChart({ inputs }: EffectiveWageChartProps) 
   }
 
   return (
-    <div className="bg-white p-4 rounded-lg border border-gray-200">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">Effective Wage Curve</h3>
+    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+      <h3 className="text-sm font-semibold text-gray-200 mb-3">Effective Wage Curve</h3>
       <ResponsiveContainer width="100%" height={250}>
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="distribution" label={{ value: 'Distribution %', position: 'insideBottom', offset: -5 }} />
-          <YAxis label={{ value: '$/hr', angle: -90, position: 'insideLeft' }} />
-          <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}/hr`} />
-          <Legend />
-          <ReferenceLine y={60} stroke="red" strokeDasharray="3 3" label="$60/hr cap" />
-          <Line type="monotone" dataKey="effectiveWage" stroke="#82ca9d" name="Effective Wage" strokeWidth={2} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+          <XAxis
+            dataKey="distribution"
+            label={{ value: 'Distribution %', position: 'insideBottom', offset: -5, fill: '#9CA3AF' }}
+            stroke="#9CA3AF"
+          />
+          <YAxis
+            label={{ value: '$/hr', angle: -90, position: 'insideLeft', fill: '#9CA3AF' }}
+            stroke="#9CA3AF"
+          />
+          <Tooltip
+            formatter={(value) => `$${Number(value).toFixed(2)}/hr`}
+            contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '0.5rem' }}
+            labelStyle={{ color: '#E5E7EB' }}
+            itemStyle={{ color: '#6EE7B7' }}
+          />
+          <Legend wrapperStyle={{ color: '#9CA3AF' }} />
+          <ReferenceLine y={60} stroke="#F87171" strokeDasharray="3 3" label={{ value: "$60/hr cap", fill: '#F87171' }} />
+          <Line type="monotone" dataKey="effectiveWage" stroke="#10B981" name="Effective Wage" strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>

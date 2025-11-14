@@ -20,8 +20,8 @@ export default function SliderControl({
   return (
     <div className="mb-6">
       <div className="flex justify-between items-center mb-2">
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-        <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded">
+        <label className="text-sm font-medium text-gray-300">{label}</label>
+        <span className="text-sm font-semibold text-blue-400 bg-blue-900/30 px-3 py-1 rounded">
           {format(value)}
         </span>
       </div>
@@ -32,7 +32,7 @@ export default function SliderControl({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+        className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
       />
       <div className="flex justify-between text-xs text-gray-500 mt-1">
         <span>{format(min)}</span>

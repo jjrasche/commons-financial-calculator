@@ -34,13 +34,13 @@ export default function ScenarioDropdown({ presets, onSelectPreset }: ScenarioDr
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+          <div className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-20">
             <div className="py-1">
               {presets.map((preset, index) => (
                 <button
                   key={index}
                   onClick={() => handleSelect(preset)}
-                  className="w-full text-left px-4 py-2 hover:bg-blue-50 transition-colors text-gray-700 hover:text-blue-600"
+                  className="w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors text-gray-300 hover:text-blue-400"
                 >
                   {preset.name}
                 </button>

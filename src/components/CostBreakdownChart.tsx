@@ -5,7 +5,7 @@ interface CostBreakdownChartProps {
   results: CalculationResults;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
+const COLORS = ['#60A5FA', '#34D399', '#FBBF24'];
 
 export default function CostBreakdownChart({ results }: CostBreakdownChartProps) {
   const data = [
@@ -14,9 +14,39 @@ export default function CostBreakdownChart({ results }: CostBreakdownChartProps)
     { name: 'Operating', value: results.monthlyOperating },
   ];
 
+  const renderLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    name,
+    value,
+  }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const percent = ((value / results.totalCosts) * 100).toFixed(0);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#E5E7EB"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+        fontSize={12}
+        fontWeight={500}
+      >
+        {`${name}: ${percent}%`}
+      </text>
+    );
+  };
+
   return (
-    <div className="bg-white p-4 rounded-lg border border-gray-200">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">Monthly Cost Breakdown</h3>
+    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+      <h3 className="text-sm font-semibold text-gray-200 mb-3">Monthly Cost Breakdown</h3>
       <ResponsiveContainer width="100%" height={250}>
         <PieChart>
           <Pie
@@ -24,7 +54,7 @@ export default function CostBreakdownChart({ results }: CostBreakdownChartProps)
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={(entry) => `${entry.name}: ${((entry.value / results.totalCosts) * 100).toFixed(0)}%`}
+            label={renderLabel}
             outerRadius={80}
             fill="#8884d8"
             dataKey="value"
@@ -33,8 +63,12 @@ export default function CostBreakdownChart({ results }: CostBreakdownChartProps)
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
-          <Legend />
+          <Tooltip
+            formatter={(value) => `$${Number(value).toLocaleString()}`}
+            contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '0.5rem' }}
+            labelStyle={{ color: '#E5E7EB' }}
+          />
+          <Legend wrapperStyle={{ color: '#9CA3AF' }} />
         </PieChart>
       </ResponsiveContainer>
     </div>

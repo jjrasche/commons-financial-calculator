@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
-import { CalculatorInputs } from './types';
+import { CalculatorInputs, MemberTiers } from './types';
 import { calculateResults, checkConstraints, formatCurrency, formatPercentage } from './calculationEngine';
 import { DEFAULT_VALUES, SCENARIO_PRESETS } from './presets';
 import SliderControl from './components/SliderControl';
 import KeyMetrics from './components/KeyMetrics';
+import MemberMetrics from './components/MemberMetrics';
+import MemberTierControls from './components/MemberTierControls';
 import WagesVsSavingsChart from './components/WagesVsSavingsChart';
 import EffectiveWageChart from './components/EffectiveWageChart';
 import CostBreakdownChart from './components/CostBreakdownChart';
+import ProjectionChart from './components/ProjectionChart';
 import ConstraintViolations from './components/ConstraintViolations';
 import ScenarioDropdown from './components/ScenarioDropdown';
+import ComparisonView from './components/ComparisonView';
 
 const STORAGE_KEY = 'commons-calculator-inputs';
 
@@ -18,13 +22,27 @@ function App() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        // Ensure memberTiers exists for backward compatibility
+        if (!parsed.memberTiers) {
+          parsed.memberTiers = DEFAULT_VALUES.memberTiers;
+        }
+        return parsed;
       } catch (e) {
         return DEFAULT_VALUES;
       }
     }
     return DEFAULT_VALUES;
   });
+
+  // Comparison mode state
+  const [showComparison, setShowComparison] = useState(false);
+  const [comparisonInputs, setComparisonInputs] = useState<CalculatorInputs>(inputs);
+
+  // Projection settings
+  const [projectionMonths, setProjectionMonths] = useState(24);
+  const [volumeGrowthRate, setVolumeGrowthRate] = useState(2); // % per month
+  const [showProjections, setShowProjections] = useState(true);
 
   // Save to localStorage whenever inputs change
   useEffect(() => {
@@ -34,10 +52,16 @@ function App() {
   // Calculate results
   const results = calculateResults(inputs);
   const violations = checkConstraints(inputs, results);
+  const comparisonResults = calculateResults(comparisonInputs);
 
   // Update individual input
   const updateInput = (key: keyof CalculatorInputs, value: number) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Update member tiers
+  const updateMemberTiers = (tiers: MemberTiers) => {
+    setInputs((prev) => ({ ...prev, memberTiers: tiers }));
   };
 
   // Load scenario preset
@@ -45,21 +69,55 @@ function App() {
     setInputs((prev) => ({ ...prev, ...preset.values }));
   };
 
+  // Snapshot current scenario for comparison
+  const snapshotForComparison = () => {
+    setComparisonInputs(inputs);
+    setShowComparison(true);
+  };
+
+  // Reset to defaults
+  const resetToDefaults = () => {
+    setInputs(DEFAULT_VALUES);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
+      {/* Comparison Modal */}
+      {showComparison && (
+        <ComparisonView
+          currentResults={results}
+          comparisonResults={comparisonResults}
+          onClose={() => setShowComparison(false)}
+        />
+      )}
+
       {/* Top Menu Bar */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="bg-gray-800 border-b border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-wrap gap-3 justify-between items-center">
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-100">
                 Commons Financial Calculator
               </h1>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">
+              <p className="text-xs md:text-sm text-gray-400 mt-1">
                 Interactive economic modeling for The Commons cooperative
               </p>
             </div>
-            <ScenarioDropdown presets={SCENARIO_PRESETS} onSelectPreset={loadPreset} />
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={snapshotForComparison}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+              >
+                📊 Compare Scenario
+              </button>
+              <button
+                onClick={resetToDefaults}
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+              >
+                ↺ Reset
+              </button>
+              <ScenarioDropdown presets={SCENARIO_PRESETS} onSelectPreset={loadPreset} />
+            </div>
           </div>
         </div>
       </div>
@@ -68,14 +126,14 @@ function App() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Left Panel: Input Controls (40% on desktop) */}
-          <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800 mb-6">Input Controls</h2>
+          <div className="lg:col-span-2 bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-100 mb-6">💰 Financial Controls</h2>
 
             <SliderControl
               label="Food Cost per Meal"
               value={inputs.foodCost}
-              min={4}
-              max={7}
+              min={2}
+              max={12}
               step={0.25}
               onChange={(v) => updateInput('foodCost', v)}
               format={(v) => formatCurrency(v, 2)}
@@ -84,8 +142,8 @@ function App() {
             <SliderControl
               label="Public Meal Price"
               value={inputs.publicPrice}
-              min={8}
-              max={15}
+              min={5}
+              max={25}
               step={0.5}
               onChange={(v) => updateInput('publicPrice', v)}
               format={(v) => formatCurrency(v, 2)}
@@ -94,8 +152,8 @@ function App() {
             <SliderControl
               label="Member Meal Price"
               value={inputs.memberPrice}
-              min={5}
-              max={10}
+              min={3}
+              max={20}
               step={0.25}
               onChange={(v) => updateInput('memberPrice', v)}
               format={(v) => formatCurrency(v, 2)}
@@ -104,9 +162,9 @@ function App() {
             <SliderControl
               label="Base Hourly Wage"
               value={inputs.baseWage}
-              min={15}
-              max={25}
-              step={1}
+              min={10}
+              max={40}
+              step={0.5}
               onChange={(v) => updateInput('baseWage', v)}
               format={(v) => formatCurrency(v, 2)}
             />
@@ -114,9 +172,9 @@ function App() {
             <SliderControl
               label="Daily Production Volume"
               value={inputs.dailyVolume}
-              min={300}
-              max={600}
-              step={25}
+              min={100}
+              max={1000}
+              step={10}
               onChange={(v) => updateInput('dailyVolume', v)}
               format={(v) => `${v} meals`}
             />
@@ -124,8 +182,8 @@ function App() {
             <SliderControl
               label="Member Meal Percentage"
               value={inputs.memberPercentage}
-              min={15}
-              max={35}
+              min={5}
+              max={50}
               step={1}
               onChange={(v) => updateInput('memberPercentage', v)}
               format={(v) => formatPercentage(v)}
@@ -134,8 +192,8 @@ function App() {
             <SliderControl
               label="Annual Operating Costs"
               value={inputs.annualOperating}
-              min={80000}
-              max={150000}
+              min={40000}
+              max={300000}
               step={5000}
               onChange={(v) => updateInput('annualOperating', v)}
               format={(v) => formatCurrency(v)}
@@ -146,9 +204,15 @@ function App() {
               value={inputs.wageDistribution}
               min={0}
               max={100}
-              step={5}
+              step={1}
               onChange={(v) => updateInput('wageDistribution', v)}
               format={(v) => formatPercentage(v)}
+            />
+
+            {/* Member Tier Controls */}
+            <MemberTierControls
+              tiers={inputs.memberTiers}
+              onChange={updateMemberTiers}
             />
           </div>
 
@@ -157,6 +221,9 @@ function App() {
             {/* Key Metrics */}
             <KeyMetrics results={results} />
 
+            {/* Member Metrics */}
+            <MemberMetrics results={results} />
+
             {/* Charts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <WagesVsSavingsChart results={results} />
@@ -164,6 +231,63 @@ function App() {
             </div>
 
             <CostBreakdownChart results={results} />
+
+            {/* Projection Chart with Controls */}
+            {showProjections && (
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                <div className="flex flex-wrap gap-4 mb-4 items-center">
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="text-xs text-gray-400 block mb-1">Projection Months</label>
+                    <input
+                      type="range"
+                      min={6}
+                      max={120}
+                      step={6}
+                      value={projectionMonths}
+                      onChange={(e) => setProjectionMonths(parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                    />
+                    <div className="text-xs text-gray-500 mt-1">{projectionMonths} months ({(projectionMonths / 12).toFixed(1)} years)</div>
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="text-xs text-gray-400 block mb-1">Volume Growth Rate</label>
+                    <input
+                      type="range"
+                      min={-5}
+                      max={20}
+                      step={0.5}
+                      value={volumeGrowthRate}
+                      onChange={(e) => setVolumeGrowthRate(parseFloat(e.target.value))}
+                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                    />
+                    <div className="text-xs text-gray-500 mt-1">
+                      {volumeGrowthRate > 0 ? '+' : ''}{volumeGrowthRate}% per month
+                      {volumeGrowthRate !== 0 && ` (${(Math.pow(1 + volumeGrowthRate / 100, 12) * 100 - 100).toFixed(0)}% annual)`}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowProjections(false)}
+                    className="text-gray-400 hover:text-gray-200 text-xs"
+                  >
+                    ✕ Hide
+                  </button>
+                </div>
+                <ProjectionChart
+                  inputs={inputs}
+                  projectionMonths={projectionMonths}
+                  volumeGrowthRate={volumeGrowthRate}
+                />
+              </div>
+            )}
+
+            {!showProjections && (
+              <button
+                onClick={() => setShowProjections(true)}
+                className="w-full bg-gray-800 p-4 rounded-lg border border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-600 transition-colors"
+              >
+                📈 Show Growth Projections
+              </button>
+            )}
 
             {/* Constraint Violations */}
             <ConstraintViolations violations={violations} />

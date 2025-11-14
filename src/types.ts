@@ -1,3 +1,9 @@
+export interface MemberTiers {
+  tier1Count: number; // 8 hrs/month
+  tier2Count: number; // 20 hrs/month
+  tier3Count: number; // 40 hrs/month
+}
+
 export interface CalculatorInputs {
   foodCost: number;
   publicPrice: number;
@@ -7,6 +13,7 @@ export interface CalculatorInputs {
   memberPercentage: number;
   annualOperating: number;
   wageDistribution: number;
+  memberTiers: MemberTiers;
 }
 
 export interface CalculationResults {
@@ -35,6 +42,21 @@ export interface CalculationResults {
   // Breakeven
   breakeven: number;
   marginOfSafety: number;
+
+  // Member Metrics
+  totalMembers: number;
+  totalMemberHours: number;
+  laborHoursNeeded: number;
+  staffingRatio: number; // actual / needed
+  avgHoursPerMember: number;
+}
+
+export interface ProjectionPoint {
+  month: number;
+  surplus: number;
+  effectiveWage: number;
+  totalMembers: number;
+  dailyVolume: number;
 }
 
 export interface ConstraintViolation {
