@@ -14,6 +14,7 @@ import ConstraintViolations from './components/ConstraintViolations';
 import ScenarioDropdown from './components/ScenarioDropdown';
 import ComparisonView from './components/ComparisonView';
 import PersonalCalculator from './components/PersonalCalculator';
+import AIAssistant from './components/AIAssistant';
 
 const STORAGE_KEY = 'commons-calculator-inputs';
 
@@ -48,6 +49,9 @@ function App() {
   // View mode: personal or operational
   const [viewMode, setViewMode] = useState<'personal' | 'operational'>('personal');
 
+  // AI Assistant state
+  const [showAI, setShowAI] = useState(false);
+
   // Save to localStorage whenever inputs change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
@@ -61,6 +65,11 @@ function App() {
   // Update individual input
   const updateInput = (key: keyof CalculatorInputs, value: number) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Update multiple inputs (for AI assistant)
+  const updateInputs = (updates: Partial<CalculatorInputs>) => {
+    setInputs((prev) => ({ ...prev, ...updates }));
   };
 
   // Update member tiers
@@ -93,6 +102,29 @@ function App() {
           comparisonResults={comparisonResults}
           onClose={() => setShowComparison(false)}
         />
+      )}
+
+      {/* AI Assistant Modal */}
+      {showAI && viewMode === 'operational' && (
+        <AIAssistant
+          inputs={inputs}
+          results={results}
+          onUpdateInputs={updateInputs}
+          onClose={() => setShowAI(false)}
+        />
+      )}
+
+      {/* Floating AI Button */}
+      {viewMode === 'operational' && !showAI && (
+        <button
+          onClick={() => setShowAI(true)}
+          className="fixed bottom-8 right-8 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 rounded-full shadow-2xl hover:shadow-purple-500/50 hover:scale-110 transition-all z-40 flex items-center gap-2 group"
+        >
+          <span className="text-2xl">🤖</span>
+          <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap font-semibold">
+            AI Assistant
+          </span>
+        </button>
       )}
 
       {/* Top Menu Bar */}
