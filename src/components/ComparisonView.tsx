@@ -16,7 +16,7 @@ export default function ComparisonView({ currentResults, comparisonResults, onCl
     { label: 'Savings Pool', key: 'savingsPool', format: (v: number) => formatCurrency(v) },
     { label: 'Margin of Safety', key: 'marginOfSafety', format: (v: number) => formatPercentage(v) },
     { label: 'Staffing Level', key: 'staffingRatio', format: (v: number) => (v * 100).toFixed(0) + '%' },
-    { label: 'Daily Volume', key: 'memberMealsPerDay', format: (v: number, r: CalculationResults) =>
+    { label: 'Daily Volume', key: 'memberMealsPerDay', format: (_v: number, r: CalculationResults) =>
       `${(r.memberMealsPerDay + r.publicMealsPerDay).toFixed(0)} meals`
     },
   ];

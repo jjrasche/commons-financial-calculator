@@ -1,5 +1,4 @@
 import { CalculationResults } from '../types';
-import { formatCurrency } from '../calculationEngine';
 
 interface MemberMetricsProps {
   results: CalculationResults;
