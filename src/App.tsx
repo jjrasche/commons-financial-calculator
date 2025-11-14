@@ -185,7 +185,7 @@ function App() {
             <SliderControl
               label="Member Meal Price"
               value={inputs.memberPrice}
-              min={3}
+              min={0}
               max={20}
               step={0.25}
               onChange={(v) => updateInput('memberPrice', v)}
